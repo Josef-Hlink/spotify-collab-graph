@@ -2,7 +2,6 @@
 This program creates a graph that shows the collaboration between a given set of artists based on how many songs they have collaborated on.
 For this, we use the spotipy and networkx libraries.
 """
-
 import time
 import pandas as pd
 import spotipy
@@ -10,8 +9,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # TODO
 import networkx as nx
-import matplotlib.pyplot as plt
-
 
 def main():
 
@@ -20,10 +17,10 @@ def main():
     global sp
     sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
-    artist_names = ['Kanye West', 'Pusha T', 'Jay-Z', 'Frank Ocean']
+    artist_names = ['Chefket', 'Provinz', 'MAJAN', 'CRO','Makko','Tua','Lea','Casper','Trettmann']
     # this variable maps the names to their ids
     artists: dict[str, str] = get_artist_ids(artist_names)
-
+    quit()
     df = create_dataframe(artists)
 
     # save the dataframe to a csv file
@@ -33,6 +30,10 @@ def main():
     print(f'Elapsed time: {toc - tic:2f} seconds')
     return 0
 
+def get_artist_id_from_user() -> dict[str, str]:
+
+def get_user_tracks():
+    sp.current_user_saved_tracks(limit=1000, offset=0, market=None)
 
 def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
     """   This is where most of the work is done.   """
@@ -61,6 +62,7 @@ def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
     df.columns = artists.keys()
     # fill all NaNs with 0s
     df = df.fillna(0)
+    return df
 
 def get_artist_ids(names: list[str]) -> dict[str, str]:
     """   Finds the ids of the artists using a standard query.   """
@@ -74,7 +76,7 @@ def get_artist_ids(names: list[str]) -> dict[str, str]:
         artist_id: str = result['artists']['items'][0]['id']
         # update dictionary
         ids[name] = artist_id
-
+        print(artist_id)
     return ids
 
 def get_artist_ids_for_song(song_id: str) -> list[str]:
