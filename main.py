@@ -10,7 +10,6 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # TODO
 import networkx as nx
-import matplotlib.pyplot as plt
 
 
 def main():
@@ -61,6 +60,9 @@ def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
     df.columns = artists.keys()
     # fill all NaNs with 0s
     df = df.fillna(0)
+    
+    return df
+
 
 def get_artist_ids(names: list[str]) -> dict[str, str]:
     """   Finds the ids of the artists using a standard query.   """
