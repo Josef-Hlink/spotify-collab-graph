@@ -17,28 +17,38 @@ def main():
     tic = time.time()
     global sp
     #use the scope argument when retrieving user data, use the other one when artists.csv has been generated for faster runtime.
-    #sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth())
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope))
+    #sp = spotipy.Spotify(auth_manager=SpotifyOAuth())
 
     #running this block once gets all the artist names and IDs from a user's saved songs and exports it to csv.
     #artists = get_user_artists_from_saved_songs()
-    #df_artists = artists_to_dataframe(artists)
+    #df_artists = pd.DataFrame(list(artists.items()), columns = ['name', 'id'])
     #df_artists.to_csv('results/artists.csv')
 
-    df_artists = pd.read_csv('results/artists.csv') 
-    artists_reformat = get_format_from_list(df_artists)
-    df1 = create_dataframe(artists_reformat)
-    df1.to_csv('results/collaborations.csv')
+    #when you have a list of the artists saved, running this block will convert it back to the right dictionary format and enter it into
+    # the collaboration matrix generator
+    df_artists = pd.read_csv('results/artists.csv')
+    dict_artists = df_to_dict(df_artists)
+    df_coll = create_dataframe(dict_artists)
+    df_coll.to_csv('results/collaborations.csv')
     toc = time.time()
     print(f'Elapsed time: {toc - tic:2f} seconds')
     return 0
 
+#This function takes the csv file containing artist data and converts it back to the right dictionary format
+def df_to_dict(dfa: pd.DataFrame) -> dict[str,str]:
+    dfa.reset_index(drop=True)
+    artists = {}
+    names = list(dfa['name'])
+    ids = list(dfa['id'])
+    for name in names:
+        artists[name] = ids[names.index(name)]
+    return artists
+
 # loops over the first 1000 saved songs and returns a list of dictionaries of the format {'name': 'artist_name', 'id': 'artist ID'}
 def get_user_artists_from_saved_songs() -> dict[str,str]:
-    #initialise lists and dictionary
-    artist_ids: list[str] = []
-    artist_names: list[str] = []
-    artist_infos: list[dict[str,str]] = []
+    #initialise artist ids
+    ids = {}
 
     #sp.current_user_saved_tracks has a limit of 50 tracks at once 
     #the offset parameter starts the data collection further down the list of tracks, so by iterating this in steps of 50 
@@ -50,33 +60,16 @@ def get_user_artists_from_saved_songs() -> dict[str,str]:
     for offset in range(0,21):
         saved_songs: dict = sp.current_user_saved_tracks(limit=50, offset=50*offset, market=None)
         for song in saved_songs['items']:
-            artist_info: dict[list[str],list[str]] = [{'artist_name':artist['name'],'artist_id':artist['id']} for artist in song['track']['artists']]
-            artist_infos += artist_info
-    #remove duplicate artists from the list of dictionaries
-    unique_entries =set(frozenset(artist.items()) for artist in artist_infos)
-    unique_artists = [dict(s) for s in unique_entries]
-    return unique_artists
-
-def get_format_from_list(artists: pd.DataFrame) -> dict[str,str]:
- # initialize empty dictionary
-    ids = {}
-    names = list(artists['artist_name'])
-    IDS = list(artists['artist_id'])
-    for name in names:
-        ids[name] = IDS[names.index(name)]
+                for artist in song['track']['artists']:
+                    ids[artist['name']] = artist['id']
     return ids
-
-#turns the list of dictionaries into a dataframe for exporting to csv.
-def artists_to_dataframe(artists: list[dict[str,str]]) -> pd.DataFrame:
-    df = pd.DataFrame(artists)
-    return df
 
 def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
     """   This is where most of the work is done.   """
 
     # the dataframe will essentially be a matrix, where each song is a row with two or more ones for its columns
     df = pd.DataFrame(columns=artists.values())
-
+    df.index.name = 'song_id'
     # for each artist, get their songs
     for artist_name, artist_id in artists.items():
         print(f'querying songs for "{artist_name}"...')
