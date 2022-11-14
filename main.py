@@ -9,6 +9,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # TODO
+import matplotlib.pyplot as plt
 import networkx as nx
 
 
@@ -19,11 +20,12 @@ def main():
     global sp
     sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 
-    # playlist_name = 'amazing'
-    # playlist_id = '0h9FqxtPsTl96WWHsoLCye'
-    playlist_name = 'test'
-    playlist_id = '034e7QTICexVCHgdEzL0J2'
+    playlist_name = 'amazing'
+    playlist_id = '0h9FqxtPsTl96WWHsoLCye'
+    # playlist_name = 'test'
+    # playlist_id = '034e7QTICexVCHgdEzL0J2'
     artists: dict[str, str] = get_artists_from_playlist(playlist_id)
+    print(f'Found {len(artists)} artists in the "{playlist_name}" playlist.')
 
     # find out the collaboration data
     df = create_dataframe(artists)
@@ -33,7 +35,37 @@ def main():
 
     toc = time.time()
     print(f'Elapsed time: {toc - tic:2f} seconds')
+
+    df = pd.read_csv(f'results/{playlist_name}_collaborations.csv', index_col=0)
+    # drop columns with only only zeros
+    nw = create_network(df)
+    fig, ax = plt.subplots(figsize=(10, 10))
+    nx.draw(nw, with_labels=True, ax=ax)
+    fig.tight_layout()
+    fig.savefig(f'results/{playlist_name}_collaborations.png')
+
     return 0
+
+
+def create_network(df: pd.DataFrame) -> nx.Graph:
+    """   Creates a networkx graph from the dataframe.   """
+
+    # create a graph
+    G = nx.Graph()
+    # add nodes
+    G.add_nodes_from(df.columns)
+    # add edges
+    for i, row in df.iterrows():
+        # get the artists for this song
+        artists = row[row == 1].index
+        # add edges between all artists
+        G.add_edges_from([(artists[i], artists[j]) for i in range(len(artists)) for j in range(i+1, len(artists))])
+    
+    # increase spacing between nodes
+    pos = nx.spring_layout(G, k=0.7)
+    nx.set_node_attributes(G, pos, 'pos')
+
+    return G
 
 
 def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
@@ -65,7 +97,9 @@ def create_dataframe(artists: dict[str, str]) -> pd.DataFrame:
     df.columns = artists.values()
     # fill all NaNs with 0s
     df = df.fillna(0)
-    
+    # drop artists that have no collaborations
+    df = df.loc[:, (df != 0).any(axis=0)]
+
     return df
 
 
