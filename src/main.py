@@ -37,19 +37,19 @@ def main():
     df = create_dataframe(artists)
 
     # save the dataframe to a csv file
-    df.to_csv(f'results/csv/{playlist_name}_collaborations.csv')
+    df.to_csv(f'../results/csv/{playlist_name}_collaborations.csv')
 
     toc = time.time()
     print(f'Elapsed time: {toc - tic:2f} seconds')
     print(f'Number of API calls made: {CALLS}')
 
-    df = pd.read_csv(f'results/csv/{playlist_name}_collaborations.csv', index_col='song_id')
+    df = pd.read_csv(f'../results/csv/{playlist_name}_collaborations.csv', index_col='song_id')
     # drop columns with only only zeros
     nw = create_network(df)
     fig, ax = plt.subplots(figsize=(10, 10))
     nx.draw(nw, with_labels=True, ax=ax)
     fig.tight_layout()
-    fig.savefig(f'results/png/{playlist_name}_collaborations.png')
+    fig.savefig(f'../results/png/{playlist_name}_collaborations.png')
 
     return 0
 
