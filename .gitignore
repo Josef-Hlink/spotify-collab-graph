@@ -3,3 +3,4 @@ venv
 results
 .vscode
 load_creds.sh
+__pycache__

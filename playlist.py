@@ -17,7 +17,7 @@ def main():
     playlist_name = 'clasico'
     playlist_id = '4WjU0YeCrRteF501YSFhY1'
     songs = get_songs_for_playlist(playlist_id)
-    with open(f'results/{playlist_name}.json', 'w') as f:
+    with open(f'results/json/{playlist_name}.json', 'w') as f:
         json.dump(songs, f, ensure_ascii=False, indent=2, separators=(',', ': '))
 
     toc = time.time()
