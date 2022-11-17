@@ -1,3 +1,5 @@
 venv
-.cache
+*cache*
 results
+.vscode
+load_creds.sh
