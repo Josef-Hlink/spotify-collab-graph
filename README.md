@@ -21,7 +21,7 @@ export SPOTIPY_REDIRECT_URI="your-app-redirect-url"
 python3 main.py
 ```
 
-The redirect url can just be `http://localhost:8888/callback/` for testing.
+The redirect uri can just be `http://localhost:8888/callback/` for testing.
 
 
 ## Dependencies
@@ -40,5 +40,3 @@ The redirect url can just be `http://localhost:8888/callback/` for testing.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-
